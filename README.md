@@ -76,3 +76,14 @@ end
 
 <img src="./docs/images/MatlabStationsMap.png" width="75%"
     alt="Map of stations in Chiang Mai area" />
+
+### Get air quality data for a specific station
+
+```MATLAB
+% Find station with the worst AQI
+[~, i] = max(result.AQI);
+worst_station = result.Station([i(1)]);
+
+% Get air quality data for given station
+measurements = aqi.station(worst_station)
+```

@@ -8,13 +8,26 @@ classdef WAQI
             obj.api = waqi.internal.ApiClient("https://api.waqi.info", token);
         end
 
+        function result = station(obj, station)
+            arguments
+                obj waqi.WAQI
+                station (1, 1) waqi.AirQualityStation
+            end
+
+            resp = obj.api.get(["feed", sprintf("@%u", station.ID)], {});
+
+            result = obj.parseStationEntry(resp);
+        end
+
         function result = city(obj, city)
             arguments
                 obj waqi.WAQI
                 city (1, 1) string
             end
 
-            result = obj.api.get(["feed", city], {});
+            resp = obj.api.get(["feed", city], {});
+
+            result = obj.parseStationEntry(resp);
         end
 
         % TODO: Prove that this is actually nearest, not interpolated
@@ -89,7 +102,7 @@ classdef WAQI
             % Consider support for multiple points
             resp = obj.api.get(["feed", sprintf("geo:%.6f;%.6f", latitude, longitude)], {});
 
-            result = parseStationEntry(resp);
+            result = obj.parseStationEntry(resp);
         end
 
         function result = getStationsForBoundingBox(obj, boundingBox)
@@ -105,6 +118,7 @@ classdef WAQI
         end
 
         function result = parseStationEntry(~, resp)
+            % TODO: Parse raw response from server
             result = resp;
         end
 
