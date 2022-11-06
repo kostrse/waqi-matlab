@@ -117,9 +117,20 @@ classdef WAQI
             result = obj.parseStationList(resp);
         end
 
-        function result = parseStationEntry(~, resp)
-            % TODO: Parse raw response from server
-            result = resp;
+        function result = parseStationEntry(obj, resp)
+            location = geopoint(resp.city.geo(1), resp.city.geo(2));
+
+            result = struct();
+            result.Latitude = location.Latitude';
+            result.Longitude = location.Longitude';
+            result.Location = location;
+            result.Station = waqi.AirQualityStation(resp.idx, resp.city.name, location, resp.city.url);
+
+            result.AQI = resp.aqi;
+            result.Timestamp = datetime(resp.time.iso, InputFormat="yyyy-MM-dd'T'HH:mm:ssXXX", TimeZone="local");
+
+            result.Measurements = obj.parseMeasurements(resp);
+            result.Forecast = obj.parseForecast(resp);
         end
 
         function result = parseStationList(~, resp)
@@ -136,6 +147,19 @@ classdef WAQI
 
             result.AQI = str2double(resp.aqi);
             result.Timestamp = datetime(resp_stations.time, InputFormat="yyyy-MM-dd'T'HH:mm:ssXXX", TimeZone="local");
+        end
+
+        function result = parseMeasurements(~, resp)
+            result = structfun(@(x) x.v, resp.iaqi, UniformOutput=false);
+        end
+
+        function result = parseForecast(obj, resp)
+            result = structfun(@obj.parseForecastTable, resp.forecast.daily, UniformOutput=false);
+        end
+
+        function result = parseForecastTable(~, raw)
+            t = struct2table(raw);
+            result = timetable(datetime(t.day), t.avg, t.max, t.min, VariableNames=["Avg", "Max", "Min"]);
         end
     end
 end
