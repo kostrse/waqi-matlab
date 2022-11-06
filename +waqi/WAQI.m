@@ -87,7 +87,9 @@ classdef WAQI
             end
 
             % Consider support for multiple points
-            result = obj.api.get(["feed", sprintf("geo:%.6f;%.6f", latitude, longitude)], {});
+            resp = obj.api.get(["feed", sprintf("geo:%.6f;%.6f", latitude, longitude)], {});
+
+            result = parseStationEntry(resp);
         end
 
         function result = getStationsForBoundingBox(obj, boundingBox)
@@ -96,8 +98,30 @@ classdef WAQI
                 boundingBox (2, 1) geopoint
             end
 
-            result = obj.api.get(["map", "bounds"], {"latlng", sprintf("%.6f,%.6f,%.6f,%.6f", ...
+            resp = obj.api.get(["map", "bounds"], {"latlng", sprintf("%.6f,%.6f,%.6f,%.6f", ...
                 boundingBox(1).Latitude, boundingBox(1).Longitude, boundingBox(2).Latitude, boundingBox(2).Longitude)});
+
+            result = obj.parseStationList(resp);
+        end
+
+        function result = parseStationEntry(~, resp)
+            result = resp;
+        end
+
+        function result = parseStationList(~, resp)
+            resp = struct2table(resp);
+            resp_stations = struct2table(resp.station);
+
+            location = geopoint(resp.lat, resp.lon);
+
+            result = table();
+            result.Latitude = location.Latitude';
+            result.Longitude = location.Longitude';
+            result.Location = location;
+            result.Station = arrayfun(@waqi.AirQualityStation, uint32(resp.uid), resp_stations.name, location);
+
+            result.AQI = str2double(resp.aqi);
+            result.Timestamp = datetime(resp_stations.time, InputFormat="yyyy-MM-dd'T'HH:mm:ssXXX", TimeZone="local");
         end
     end
 end
