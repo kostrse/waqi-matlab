@@ -1,4 +1,4 @@
-[![View on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/120043-waqi-matlab)
+[![View WAQI (World Air Quality Index) client for MATLAB on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/120043-waqi-world-air-quality-index-client-for-matlab)
 
 # WAQI client for MATLAB
 
@@ -10,7 +10,7 @@ Request the WAQI API access token at https://aqicn.org/api/.
 
 ## Usage
 
-### Get air quality data for given location
+### Air quality data for the given location
 
 ```MATLAB
 token = "<your token>";
@@ -23,7 +23,24 @@ bangkok = aqi.city("bangkok");
 seattle = aqi.nearest([47.62050, -122.34930]);
 ```
 
-### Get list of stations for given geographic area
+Plot received forecast data:
+```MATLAB
+forecast = seattle.Forecast.pm25;
+
+figure
+plot(forecast.Time, forecast.Avg, Color="black", LineWidth=1.5, Color=[0, 0.3, 0.5])
+title("Air Quality Forecast")
+hold on
+plot(forecast.Time, forecast.Max, Color=[0.6, 0.6, 0.6])
+plot(forecast.Time, forecast.Min, Color=[0.3, 0.3, 0.3])
+legend(["Avg", "Max", "Min"], Location="northwest")
+hold off
+```
+
+<img src="./docs/images/ForecastGraph.png" width="75%"
+    alt="Forecast graph for Seattle" />
+
+### List of stations for the given geographical area
 
 ```MATLAB
 % Geographic boundary
@@ -77,7 +94,7 @@ end
 <img src="./docs/images/MatlabStationsMap.png" width="75%"
     alt="Map of stations in Chiang Mai area" />
 
-### Get air quality data for a specific station
+### Air quality data for a specific station
 
 ```MATLAB
 % Find station with the worst AQI
